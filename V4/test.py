@@ -1,0 +1,48 @@
+import numpy as np
+import cv2 as cv
+import math
+
+img = cv.imread('V4/test2.png', cv.IMREAD_GRAYSCALE)
+assert img is not None, "file could not be read, check with os.path.exists()"
+img = cv.medianBlur(img,5)
+cimg = cv.cvtColor(img,cv.COLOR_GRAY2BGR)
+
+#for i in range()
+circles = cv.HoughCircles(img,cv.HOUGH_GRADIENT,1,20,
+                            param1=10,
+                            param2=40,
+                            minRadius=390,
+                            maxRadius=400)
+
+
+size = 50
+
+
+
+circles = np.uint16(np.around(circles))
+for i in circles[0,:]:
+    # draw the outer circle
+    for x in range(1,8):
+        r = int(i[2] / 8 * x * 1.025)
+        n = int(r * np.pi * 2 / size)
+        step = int(360 / n)
+        for u in range(0,360,step):
+            t = math.radians(u)
+            x = int(r * math.cos(t) + i[0])
+            y = int(r * math.sin(t) + i[1])
+            cv.circle(cimg,(x,y),2,(255,0,0),3)
+            print(t)
+    
+
+
+
+
+
+    for x in range(1,9):
+        r = int(i[2] / 8 * x * 1.025)
+        #cv.circle(cimg,(i[0],i[1]),r,(0,255,0),2)
+    # draw the center of the circle
+    cv.circle(cimg,(i[0],i[1]),2,(0,0,255),3)
+cv.imshow('detected circles',cimg)
+cv.waitKey(0)
+cv.destroyAllWindows()
