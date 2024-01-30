@@ -44,7 +44,7 @@ def read(path):
                 cv.circle(resized,(y,x),int(cropsize / 200),(0,255,0),-1)
                 Binary.append("1")
             cv.putText(resized,str(Binary),(0,900),1,1,(0,0,255),1)
-            debug(resized)
+            #debug(resized)
             count += 1
             #cv.putText(resized,str(count),(x,y),1,1,(0,0,255),1)
     cv.imwrite('resized.png', resized)
