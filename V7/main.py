@@ -27,9 +27,10 @@ def main():
         
     elif UserInput == "2":
         path = input("Please paste the path... ")
+        path += ".png"
         if(os.path.exists(path)):
             Binary = read(path)
-            print(BinaryToText(Binary))
+            input(BinaryToText(Binary))
         else:
             print("Path dont exists")
 

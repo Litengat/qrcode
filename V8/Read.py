@@ -11,8 +11,11 @@ def read(path):
 
 
     circle = findeCircle(img)
-    crops = crop(cimg,circle)
-    Binary = decode(crops)
+    angel = getAngle(cimg,circle)
+    print(angel)
+    rotated = rotate_image(cimg,angel)
+    croped = crop(rotated,circle)
+    Binary = decode(croped)
     Binary = Binary[13:len(Binary)]
     return Binary
 
@@ -31,40 +34,58 @@ def findeCircle(img):
     return circles[0][0]
 
 
+def getAngle(img,c):
+    n = 720
+    step = 360 / n
+    for u in range(n):
+        t = np.radians(u * step)
+        for r in range(int(c[2] * 0.97),int(c[2] * 1.05),4):
+            y = int(r * np.sin(t) + c[1])
+            x = int(r * np.cos(t) + c[0])
+            if getcolor(img[x,y]):
+                img[x,y] = [0,255,0]
+                break
+            else:
+                img[x,y] = [255,0,0]
+        else:
+            cv.imwrite('Angel.png',img)
+            return 180 - u * step + 1
+
+
+
 def crop(cimg,c):
     x = c[0] - c[2]
     y = c[1] - c[2]
     h = c[2] * 2
+    cv.imwrite('cimg.png',cimg)
     crop = cimg[y : y + h, x : x + h]
     return crop
 
-def getRadius(img,x,y):
-    for i in range(y):
-        if getcolor(img[y + i,x]):
-            return i + 2
-        else:
-            img[y + i,x] = [255,0,0]
+
 
 
 def getheader(crop):
     x = int(len(crop) / 2)
     y = int(len(crop[0]) / 2)
-    r = getRadius(crop,x,y)
+    r = getRadius(crop)
     row = getRow(crop,x,y,r * 1.1,13)
     row.reverse()
     row.pop()
     return int(''.join(row),2)    
-            
 
-
-
+def getRadius(crop):
+    x = int(len(crop) / 2)
+    y = int(len(crop[0]) / 2)
+    for i in range(y):
+        if getcolor(crop[y + i,x]):
+            return i
 
 
 def calcCircles(e):
     sum = 0
     for i in range(1,e):
         n = int(100 / 8 * i * np.pi * 2 / distancesize)
-        sum += n - 1
+        sum += n
         if(sum > e):
             return i + 1
 
@@ -76,6 +97,7 @@ def calcCircles(e):
 def decode(crop):
 
     header = getheader(crop)
+    radius = getRadius(crop)
     circles = calcCircles(header * 8)
     canvassize = circles * 30
     c = int(canvassize / 2)
@@ -84,9 +106,8 @@ def decode(crop):
     resized[c,c] = [255,255,0]
     count = 0
     Binary = []
-    r = 0
     for i in range(1,circles):
-        r = getRadius(resized,c,c)
+        r = c / circles * i + 1
         n = int(100 / 8 * i * np.pi * 2 / distancesize)
         Binary += getRow(resized,c,c,r,n)
     cv.imwrite('resized.png', resized)
@@ -111,13 +132,14 @@ def getRow(img,ix,iy,r,n):
             #cv.circle(img,(y,x),int(y / 100),(255,0,0),-1)
             Binary.append("0")
         #cv.putText(img,str(len(Binary)),(x,y),1,1,(0,0,255),1)
-        debug(img)
+    #debug(img)
     return Binary
 
 def debug(canva):
     cv.imshow('resized',canva)
-    if cv.waitKey(1) == ord('q'): 
-        return 1
+    cv.waitKey(0)
+    # if cv.waitKey(1) == ord('q'): 
+    #     return 1
 
 def getAverage(list):
     return int(sum(list) / len(list))

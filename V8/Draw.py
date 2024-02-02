@@ -10,16 +10,13 @@ def gernerate(Binary,path):
 
 
     length = int(len(Binary) / 8)
-    print(tobin(length,12))
     Binary = ["1"] + tobin(length,12) + Binary
     circles = calcCircles(len(Binary))
     print("circles: " + str(circles))
-    print(len(Binary))
     canvassize = circles * 110
     dotsize = int(circles * 100 / (15 * circles))
     c = int(canvassize / 2)
     radius = int(c * 0.9)
-
 
 
 
@@ -29,12 +26,13 @@ def gernerate(Binary,path):
     count = 0
 
 
-    cv.ellipse(canvas,(c,c),(radius,radius),0,270,-80,(0,0,0),dotsize)
+    cv.ellipse(canvas,(c,c),(radius,radius),0,265,-90,(0,0,0),dotsize * 2)
     for i in range(1,circles):
         r = radius / circles * i 
         n = int(100 / 8 * i * np.pi * 2 / distancesize)
         step = 360 / n
         #cv.circle(canva,(c,c),int(r),(100,100,100),int(canvassize / 500))
+        Binary.insert(count,'1')
         for u in range(n):
             t = np.radians(u * step)
             x = int(r * np.sin(t) + c)
@@ -47,7 +45,8 @@ def gernerate(Binary,path):
             #print(count)
             count += 1
             #cv.putText(canvas,str(count),(x,y),1,1,(0,0,255),1)
-            debug(canvas)
+            #debug(canvas)
+    #canvas = rotate_image(canvas,120)
     cv.imwrite(path,canvas)
 
 
@@ -64,13 +63,21 @@ def calcCircles(e):
     sum = 0
     for i in range(1,e):
         n = int(100 / 8 * i * np.pi * 2 / distancesize)
-        sum += n
+        sum += n - 1
         if(sum > e):
             return i + 1
 
+def rotate_image(image, angle):
+  image_center = tuple(np.array(image.shape[1::-1]) / 2)
+  rot_mat = cv.getRotationMatrix2D(image_center, angle, 1.0)
+  result = cv.warpAffine(image, rot_mat, image.shape[1::-1], flags=cv.INTER_LINEAR)
+  return result
 
 
 
 if __name__ == '__main__':
     from Encrypt import *
+    from Read import read
     gernerate(TextToBinary("Maximilian Mennicken"),'output.png')
+    code = read('output.png')
+    print(BinaryToText(code))
